@@ -1,0 +1,49 @@
+skill_id,skill_name,category
+1,Electrician,Electrical
+2,House Wiring,Electrical
+3,Fan Installation,Electrical
+4,Light Installation,Electrical
+5,Switch Repair,Electrical
+6,Plumber,Plumbing
+7,Pipe Repair,Plumbing
+8,Leak Detection,Plumbing
+9,Bathroom Fitting,Plumbing
+10,Water Tank Installation,Plumbing
+11,Carpenter,Carpentry
+12,Furniture Assembly,Carpentry
+13,Door Repair,Carpentry
+14,Wood Polishing,Carpentry
+15,Painter,Painting
+16,Wall Painting,Painting
+17,Interior Painting,Painting
+18,Exterior Painting,Painting
+19,Mason,Construction
+20,Tile Installation,Construction
+21,Concrete Work,Construction
+22,Brick Work,Construction
+23,House Cleaning,Cleaning
+24,Deep Cleaning,Cleaning
+25,Bathroom Cleaning,Cleaning
+26,Kitchen Cleaning,Cleaning
+27,AC Technician,HVAC
+28,AC Installation,HVAC
+29,AC Repair,HVAC
+30,Refrigerator Repair,HVAC
+31,Washing Machine Repair,Home Appliances
+32,TV Repair,Home Appliances
+33,Microwave Repair,Home Appliances
+34,Gardener,Gardening
+35,Lawn Maintenance,Gardening
+36,Tree Trimming,Gardening
+37,Beautician,Beauty
+38,Hair Stylist,Beauty
+39,Makeup Artist,Beauty
+40,Tailor,Tailoring
+41,Cloth Stitching,Tailoring
+42,Alteration,Tailoring
+43,Cook,Cooking
+44,Catering,Cooking
+45,Driver,Driving
+46,Security Guard,Security
+47,Packers,Moving Services
+48,Movers,Moving Services

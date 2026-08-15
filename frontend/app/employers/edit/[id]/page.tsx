@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getEmployer, updateEmployer } from "@/lib/api";
 import { EmployerForm } from "../../new/page";
+import { useToast } from "@/components/ToastProvider";
 
 type EmployerFormData = { full_name: string; phone: string; email: string; employer_type: string; verification_status: string; location_id: string };
 
 export default function EditEmployerPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const showToast = useToast();
   const [formData, setFormData] = useState<EmployerFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -35,12 +37,13 @@ export default function EditEmployerPage() {
     setSaving(true); setError("");
     try {
       await updateEmployer(params.id, { ...formData, location_id: Number(formData.location_id) });
+      showToast("Employer updated.", "success");
       router.push(`/employers/${params.id}`);
     } catch (err) { setError(err instanceof Error ? err.message : "Failed to update employer."); }
     finally { setSaving(false); }
   }
 
   if (loading) return <div className="page-container">Loading employer...</div>;
-  if (!formData) return <div className="page-container"><h1 className="page-title">Edit Employer</h1><div style={{ marginTop: "20px", padding: "12px", background: "#fee2e2", color: "#b91c1c", borderRadius: "7px" }}>{error || "Employer not found."}</div></div>;
+  if (!formData) return <div className="page-container"><h1 className="page-title">Edit Employer</h1><div className="error-banner">{error || "Employer not found."}</div></div>;
   return <EmployerForm title="Edit Employer" description="Update this employer's registered information." formData={formData} error={error} loading={saving} submitLabel="Save Changes" onChange={handleChange} onSubmit={handleSubmit} />;
 }

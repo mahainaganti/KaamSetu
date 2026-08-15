@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -22,7 +23,12 @@ export default function Navbar() {
       </div>
 
       <div className="navbar-right">
-        <button className="notification-button">🔔</button>
+        <ThemeToggle />
+
+        <button className="icon-button notification-button" aria-label="Notifications" title="Notifications">
+          🔔
+          <span className="notification-dot" />
+        </button>
 
         <div className="profile">
           <div className="profile-avatar">M</div>

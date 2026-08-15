@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getWorker, updateWorker } from "@/lib/api";
+import { useToast } from "@/components/ToastProvider";
 
 type WorkerForm = {
   full_name: string; phone: string; gender: string; preferred_language: string;
@@ -19,6 +20,7 @@ const emptyForm: WorkerForm = {
 export default function EditWorkerPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
+  const showToast = useToast();
   const [formData, setFormData] = useState<WorkerForm>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -68,6 +70,7 @@ export default function EditWorkerPage() {
         availability_status: formData.availability_status,
         location_id: Number(formData.location_id),
       });
+      showToast("Worker updated.", "success");
       router.push(`/workers/${params.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update worker.");
@@ -83,9 +86,9 @@ export default function EditWorkerPage() {
       <div className="page-header"><h1 className="page-title">Edit Worker</h1><p className="page-description">Update this worker&apos;s registered information.</p></div>
       <div className="table-container">
         <div className="table-header">Worker Information</div>
-        <form onSubmit={handleSubmit} style={{ padding: "25px" }}>
-          {error && <div style={{ marginBottom: "20px", padding: "12px", background: "#fee2e2", color: "#b91c1c", borderRadius: "7px" }}>{error}</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px" }}>
+        <form onSubmit={handleSubmit} className="form-panel">
+          {error && <div className="error-banner">{error}</div>}
+          <div className="form-grid">
             <Field label="Full Name" name="full_name" value={formData.full_name} onChange={handleChange} />
             <Field label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
             <Select label="Gender" name="gender" value={formData.gender} onChange={handleChange} options={["Female", "Male", "Other"]} />
@@ -97,9 +100,9 @@ export default function EditWorkerPage() {
             <Select label="Availability Status" name="availability_status" value={formData.availability_status} onChange={handleChange} options={["Available", "Busy", "Unavailable"]} />
             <Field label="Location ID" name="location_id" type="number" min="1" value={formData.location_id} onChange={handleChange} />
           </div>
-          <div style={{ display: "flex", gap: "12px", marginTop: "25px" }}>
+          <div className="button-row">
             <button type="submit" className="primary-button" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>
-            <button type="button" onClick={() => router.back()} disabled={saving} style={{ padding: "11px 18px", border: "1px solid #d1d5db", borderRadius: "7px", background: "white", cursor: "pointer", fontWeight: 600 }}>Cancel</button>
+            <button type="button" onClick={() => router.back()} disabled={saving} className="btn-secondary">Cancel</button>
           </div>
         </form>
       </div>
@@ -111,9 +114,9 @@ type ChangeHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElem
 type FieldProps = { label: string; name: keyof WorkerForm; value: string; onChange: ChangeHandler; type?: string; min?: string; step?: string };
 
 function Field({ label, name, value, onChange, type = "text", min, step }: FieldProps) {
-  return <div><label htmlFor={name} style={{ display: "block", marginBottom: "7px", fontWeight: 600 }}>{label}</label><input id={name} name={name} type={type} min={min} step={step} value={value} onChange={onChange} required style={{ width: "100%", padding: "11px", border: "1px solid #d1d5db", borderRadius: "7px" }} /></div>;
+  return <div className="form-group"><label htmlFor={name} className="form-label">{label}</label><input id={name} name={name} type={type} min={min} step={step} value={value} onChange={onChange} required className="form-input" /></div>;
 }
 
 function Select({ label, name, value, onChange, options }: { label: string; name: keyof WorkerForm; value: string; onChange: ChangeHandler; options: string[] }) {
-  return <div><label htmlFor={name} style={{ display: "block", marginBottom: "7px", fontWeight: 600 }}>{label}</label><select id={name} name={name} value={value} onChange={onChange} style={{ width: "100%", padding: "11px", border: "1px solid #d1d5db", borderRadius: "7px" }}>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>;
+  return <div className="form-group"><label htmlFor={name} className="form-label">{label}</label><select id={name} name={name} value={value} onChange={onChange} className="form-input">{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></div>;
 }

@@ -1,28 +1,33 @@
 import Link from "next/link";
 
+const LINKS = [
+  { href: "/workers", icon: "👷", title: "Browse Workers", description: "Find verified, available workers near you." },
+  { href: "/jobs", icon: "💼", title: "View Jobs", description: "See open jobs waiting to be filled." },
+  { href: "/bookings", icon: "📅", title: "Manage Bookings", description: "Track scheduled and completed work." },
+  { href: "/ratings", icon: "⭐", title: "Read Ratings", description: "See feedback from past bookings." },
+];
+
 export default function Home() {
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title">Welcome to KaamSetu</h1>
-
-        <p className="page-description">
-          Find trusted workers or post a job.
-        </p>
+      <div className="hero">
+        <span className="hero-eyebrow">KaamSetu</span>
+        <h1 className="hero-title">Connecting workers with opportunity</h1>
+        <p className="hero-description">Find trusted, verified workers for any job — or post a job and get matched fast.</p>
+        <div className="hero-actions">
+          <Link href="/workers" className="primary-button">Find a Worker</Link>
+          <Link href="/jobs/new" className="btn-secondary">Post a Job</Link>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: "12px" }}>
-        <Link href="/workers">
-          <button className="primary-button">
-            Find a Worker
-          </button>
-        </Link>
-
-        <Link href="/jobs/new">
-          <button className="primary-button">
-            Post a Job
-          </button>
-        </Link>
+      <div className="landing-grid">
+        {LINKS.map((link) => (
+          <Link href={link.href} className="landing-card" key={link.href}>
+            <div className="landing-card-icon">{link.icon}</div>
+            <div className="landing-card-title">{link.title}</div>
+            <div className="landing-card-description">{link.description}</div>
+          </Link>
+        ))}
       </div>
     </div>
   );

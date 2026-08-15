@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { getWorker } from "@/lib/api";
+import { initials, statusVariant } from "@/lib/badge";
 
 export default async function WorkerDetailsPage({
   params,
@@ -6,123 +8,55 @@ export default async function WorkerDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const worker = await getWorker(id);
+
+  const fields: [string, string][] = [
+    ["Phone", worker.phone],
+    ["Gender", worker.gender],
+    ["Preferred Language", worker.preferred_language],
+    ["Experience", `${worker.experience_years} years`],
+    ["Location ID", String(worker.location_id)],
+    ["Travel Radius", `${worker.travel_radius_km} km`],
+    ["Average Rating", `⭐ ${worker.average_rating}`],
+    ["Created At", worker.created_at],
+    ["Updated At", worker.updated_at],
+  ];
 
   return (
     <div className="page-container">
-
-      {/* Page Header */}
-
-      <div className="page-header">
-
-        <h1 className="page-title">
-          Worker Details
-        </h1>
-
-        <p className="page-description">
-          Complete information about this worker.
-        </p>
-
+      <div className="page-header page-header--row">
+        <div>
+          <h1 className="page-title">Worker Details</h1>
+          <p className="page-description">Complete information about this worker.</p>
+        </div>
+        <div className="detail-hero-actions">
+          <Link href="/workers" className="btn-secondary">Back to Workers</Link>
+          <Link href={`/workers/edit/${worker.worker_id}`} className="primary-button">Edit Worker</Link>
+        </div>
       </div>
-
-
-      {/* Worker Information */}
 
       <div className="table-container">
-
-        <div className="table-header">
-          Worker Information
+        <div className="detail-hero">
+          <span className="avatar-chip avatar-chip-lg">{initials(worker.full_name)}</span>
+          <div className="detail-hero-body">
+            <div className="detail-hero-title">{worker.full_name}</div>
+            <div className="detail-hero-subtitle">Worker #{worker.worker_id}</div>
+            <div className="detail-hero-badges">
+              <span className={`badge ${statusVariant(worker.availability_status)}`}>{worker.availability_status}</span>
+              <span className={`badge ${statusVariant(worker.verification_status)}`}>{worker.verification_status}</span>
+            </div>
+          </div>
         </div>
 
-
-        <table>
-
-          <tbody>
-
-            <tr>
-              <th>Worker ID</th>
-              <td>{worker.worker_id}</td>
-            </tr>
-
-
-            <tr>
-              <th>Full Name</th>
-              <td>{worker.full_name}</td>
-            </tr>
-
-
-            <tr>
-              <th>Phone</th>
-              <td>{worker.phone}</td>
-            </tr>
-
-
-            <tr>
-              <th>Gender</th>
-              <td>{worker.gender}</td>
-            </tr>
-
-
-            <tr>
-              <th>Preferred Language</th>
-              <td>{worker.preferred_language}</td>
-            </tr>
-
-
-            <tr>
-              <th>Experience</th>
-              <td>{worker.experience_years} years</td>
-            </tr>
-
-
-            <tr>
-              <th>Location ID</th>
-              <td>{worker.location_id}</td>
-            </tr>
-
-
-            <tr>
-              <th>Travel Radius</th>
-              <td>{worker.travel_radius_km} km</td>
-            </tr>
-
-
-            <tr>
-              <th>Availability</th>
-              <td>{worker.availability_status}</td>
-            </tr>
-
-
-            <tr>
-              <th>Verification</th>
-              <td>{worker.verification_status}</td>
-            </tr>
-
-
-            <tr>
-              <th>Average Rating</th>
-              <td>⭐ {worker.average_rating}</td>
-            </tr>
-
-
-            <tr>
-              <th>Created At</th>
-              <td>{worker.created_at}</td>
-            </tr>
-
-
-            <tr>
-              <th>Updated At</th>
-              <td>{worker.updated_at}</td>
-            </tr>
-
-          </tbody>
-
-        </table>
-
+        <div className="info-grid">
+          {fields.map(([label, value]) => (
+            <div className="info-tile" key={label}>
+              <div className="info-tile-label">{label}</div>
+              <div className="info-tile-value">{value ?? "Not set"}</div>
+            </div>
+          ))}
+        </div>
       </div>
-
     </div>
   );
 }

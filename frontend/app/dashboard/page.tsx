@@ -1,4 +1,43 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { getDashboardStats, type DashboardData } from "@/lib/api";
+
+function formatRevenue(amount: number | undefined): string {
+  if (amount === undefined || amount === null) return "—";
+  if (amount >= 10000000) {
+    return `₹${(amount / 10000000).toFixed(2)}Cr`;
+  }
+  if (amount >= 100000) {
+    return `₹${(amount / 100000).toFixed(2)}L`;
+  }
+  return `₹${amount.toLocaleString("en-IN")}`;
+}
+
 export default function Dashboard() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        setError("");
+        const dashboardData = await getDashboardStats();
+        setData(dashboardData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboard();
+  }, []);
+
+  const stats = data?.stats;
+  const recentBookings = data?.recent_bookings ?? [];
+
   return (
     <div className="page-container">
 
@@ -13,6 +52,11 @@ export default function Dashboard() {
         </p>
       </div>
 
+      {error && (
+        <div style={{ padding: "14px 20px", color: "#b91c1c", background: "#fee2e2", borderRadius: "8px", marginBottom: "20px" }}>
+          {error}
+        </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="stats-grid">
@@ -24,7 +68,7 @@ export default function Dashboard() {
           </div>
 
           <div className="stat-value">
-            1,250
+            {loading ? "..." : (stats?.total_workers?.toLocaleString("en-IN") ?? "—")}
           </div>
 
           <div className="stat-description">
@@ -40,7 +84,7 @@ export default function Dashboard() {
           </div>
 
           <div className="stat-value">
-            213
+            {loading ? "..." : (stats?.available_workers?.toLocaleString("en-IN") ?? "—")}
           </div>
 
           <div className="stat-description">
@@ -56,7 +100,7 @@ export default function Dashboard() {
           </div>
 
           <div className="stat-value">
-            186
+            {loading ? "..." : (stats?.open_jobs?.toLocaleString("en-IN") ?? "—")}
           </div>
 
           <div className="stat-description">
@@ -72,7 +116,7 @@ export default function Dashboard() {
           </div>
 
           <div className="stat-value">
-            ₹8.45L
+            {loading ? "..." : formatRevenue(stats?.total_revenue)}
           </div>
 
           <div className="stat-description">
@@ -103,33 +147,24 @@ export default function Dashboard() {
 
           <tbody>
 
-            <tr>
-              <td>Rahul Kumar</td>
-              <td>Electrical Repair</td>
-              <td>Completed</td>
-              <td>₹2,500</td>
-            </tr>
-
-            <tr>
-              <td>Arun Kumar</td>
-              <td>Plumbing Work</td>
-              <td>Pending</td>
-              <td>₹1,800</td>
-            </tr>
-
-            <tr>
-              <td>Suresh Reddy</td>
-              <td>AC Maintenance</td>
-              <td>Completed</td>
-              <td>₹3,200</td>
-            </tr>
-
-            <tr>
-              <td>Ravi Sharma</td>
-              <td>House Painting</td>
-              <td>Confirmed</td>
-              <td>₹6,500</td>
-            </tr>
+            {loading ? (
+              <tr>
+                <td colSpan={4}>Loading recent bookings...</td>
+              </tr>
+            ) : recentBookings.length === 0 ? (
+              <tr>
+                <td colSpan={4}>No recent bookings found.</td>
+              </tr>
+            ) : (
+              recentBookings.map((booking) => (
+                <tr key={booking.booking_id}>
+                  <td>{booking.worker_name || "—"}</td>
+                  <td>{booking.job_title || "—"}</td>
+                  <td>{booking.booking_status || "—"}</td>
+                  <td>{booking.amount != null ? `₹${booking.amount.toLocaleString("en-IN")}` : "—"}</td>
+                </tr>
+              ))
+            )}
 
           </tbody>
 
@@ -160,22 +195,32 @@ export default function Dashboard() {
 
               <tr>
                 <td>Total Employers</td>
-                <td>420</td>
+                <td>{loading ? "..." : (stats?.total_employers?.toLocaleString("en-IN") ?? "—")}</td>
               </tr>
 
               <tr>
                 <td>Total Bookings</td>
-                <td>534</td>
+                <td>{loading ? "..." : (stats?.total_bookings?.toLocaleString("en-IN") ?? "—")}</td>
               </tr>
 
               <tr>
                 <td>Pending Payments</td>
-                <td>17</td>
+                <td>{loading ? "..." : (stats?.pending_payments?.toLocaleString("en-IN") ?? "—")}</td>
               </tr>
 
               <tr>
                 <td>Active Disputes</td>
-                <td>8</td>
+                <td>{loading ? "..." : (stats?.active_disputes?.toLocaleString("en-IN") ?? "—")}</td>
+              </tr>
+
+              <tr>
+                <td>Total Ratings</td>
+                <td>{loading ? "..." : (stats?.total_ratings?.toLocaleString("en-IN") ?? "—")}</td>
+              </tr>
+
+              <tr>
+                <td>Average Rating</td>
+                <td>{loading ? "..." : (stats?.average_rating != null ? `${stats.average_rating} / 5.0` : "—")}</td>
               </tr>
 
             </tbody>

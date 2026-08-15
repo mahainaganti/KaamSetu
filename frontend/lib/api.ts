@@ -423,3 +423,39 @@ export async function deleteRating(id: string) {
   }
   return await response.json();
 }
+
+export type DashboardStats = {
+  total_workers: number;
+  available_workers: number;
+  open_jobs: number;
+  total_revenue: number;
+  total_employers: number;
+  total_bookings: number;
+  pending_payments: number;
+  active_disputes: number;
+  total_ratings: number;
+  average_rating: number;
+};
+
+export type RecentBooking = {
+  booking_id: number;
+  worker_name: string;
+  job_title: string;
+  booking_status: string;
+  amount: number;
+};
+
+export type DashboardData = {
+  stats: DashboardStats;
+  recent_bookings: RecentBooking[];
+};
+
+export async function getDashboardStats(): Promise<DashboardData> {
+  const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || "Failed to fetch dashboard statistics");
+  }
+  return await response.json();
+}
+

@@ -16,6 +16,39 @@ export async function getWorkers() {
 }
 
 
+// Search workers
+export async function searchWorkers(filters: {
+  language?: string;
+  location_id?: string | number;
+  average_rating?: string | number;
+}) {
+  const queryParams = new URLSearchParams();
+
+  if (filters.language && filters.language.trim() !== "") {
+    queryParams.append("language", filters.language.trim());
+  }
+
+  if (filters.location_id !== undefined && filters.location_id !== null && String(filters.location_id).trim() !== "") {
+    queryParams.append("location_id", String(filters.location_id).trim());
+  }
+
+  if (filters.average_rating !== undefined && filters.average_rating !== null && String(filters.average_rating).trim() !== "") {
+    queryParams.append("average_rating", String(filters.average_rating).trim());
+  }
+
+  const queryString = queryParams.toString();
+  const endpoint = queryString ? `${API_BASE_URL}/workers/search?${queryString}` : `${API_BASE_URL}/workers`;
+
+  const response = await fetch(endpoint);
+
+  if (!response.ok) {
+    throw new Error("Failed to search workers");
+  }
+
+  return await response.json();
+}
+
+
 // Get one worker
 export async function getWorker(id: string) {
 
@@ -458,4 +491,61 @@ export async function getDashboardStats(): Promise<DashboardData> {
   }
   return await response.json();
 }
+
+
+export type Dispute = {
+  dispute_id: number;
+  booking_id: number;
+  employer_id: number;
+  worker_id: number;
+  dispute_reason: string;
+  dispute_status: string;
+  created_at: string | null;
+  resolved_at: string | null;
+  employer_name?: string | null;
+  worker_name?: string | null;
+};
+
+export async function getDisputes(): Promise<Dispute[]> {
+  const response = await fetch(`${API_BASE_URL}/disputes`);
+  if (!response.ok) throw new Error("Failed to fetch disputes");
+  return await response.json();
+}
+
+export async function getDispute(id: string): Promise<Dispute> {
+  const response = await fetch(`${API_BASE_URL}/disputes/${id}`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to fetch dispute");
+  }
+  return await response.json();
+}
+
+
+export type Notification = {
+  notification_id: number;
+  booking_id: number;
+  recipient_type: string;
+  recipient_id: number;
+  notification_type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string | null;
+};
+
+export async function getNotifications(): Promise<Notification[]> {
+  const response = await fetch(`${API_BASE_URL}/notifications`);
+  if (!response.ok) throw new Error("Failed to fetch notifications");
+  return await response.json();
+}
+
+export async function getNotification(id: string): Promise<Notification> {
+  const response = await fetch(`${API_BASE_URL}/notifications/${id}`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Failed to fetch notification");
+  }
+  return await response.json();
+}
+
 

@@ -37,6 +37,10 @@ export default function RatingsPage() {
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [minRating, setMinRating] = useState("");
+  const [bookingId, setBookingId] = useState("");
+
   async function loadRatings() {
     try {
       const [ratingsData, employersData, workersData] = await Promise.all([
@@ -110,6 +114,60 @@ export default function RatingsPage() {
     ])
   );
 
+  async function handleSearch(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const ratingsData: Rating[] = await getRatings();
+      let filtered = ratingsData;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        filtered = filtered.filter((r) => {
+          const empName = employerNames.get(r.employer_id)?.toLowerCase() || "";
+          const wrkName = workerNames.get(r.worker_id)?.toLowerCase() || "";
+          const rev = (r.review || "").toLowerCase();
+          return (
+            empName.includes(q) ||
+            wrkName.includes(q) ||
+            rev.includes(q) ||
+            String(r.worker_id) === q ||
+            String(r.employer_id) === q
+          );
+        });
+      }
+
+      if (minRating.trim()) {
+        const min = Number(minRating.trim());
+        if (!isNaN(min)) {
+          filtered = filtered.filter((r) => r.rating >= min);
+        }
+      }
+
+      if (bookingId.trim()) {
+        filtered = filtered.filter((r) => String(r.booking_id) === bookingId.trim());
+      }
+
+      setRatings(filtered);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to search ratings."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleClear() {
+    setSearchQuery("");
+    setMinRating("");
+    setBookingId("");
+    await loadRatings();
+  }
+
   async function handleDelete(rating: Rating) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this rating?"
@@ -162,6 +220,87 @@ export default function RatingsPage() {
         >
           + New Rating
         </Link>
+      </div>
+
+      {/* Search / Filter Section */}
+      <div className="table-container" style={{ marginBottom: "25px" }}>
+        <div className="table-header">Search / Filter Ratings</div>
+        <form onSubmit={handleSearch} style={{ padding: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
+            <div>
+              <label htmlFor="filter_query" style={{ display: "block", marginBottom: "7px", fontWeight: 600, fontSize: "13px" }}>
+                Search (Worker, Employer, Review)
+              </label>
+              <input
+                id="filter_query"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="e.g. Worker name or review text"
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: "7px", fontSize: "14px" }}
+              />
+            </div>
+            <div>
+              <label htmlFor="filter_min_rating" style={{ display: "block", marginBottom: "7px", fontWeight: 600, fontSize: "13px" }}>
+                Minimum Rating
+              </label>
+              <select
+                id="filter_min_rating"
+                value={minRating}
+                onChange={(e) => setMinRating(e.target.value)}
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: "7px", fontSize: "14px" }}
+              >
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4+ Stars</option>
+                <option value="3">3+ Stars</option>
+                <option value="2">2+ Stars</option>
+                <option value="1">1+ Stars</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="filter_booking_id" style={{ display: "block", marginBottom: "7px", fontWeight: 600, fontSize: "13px" }}>
+                Booking ID
+              </label>
+              <input
+                id="filter_booking_id"
+                type="number"
+                min="1"
+                value={bookingId}
+                onChange={(e) => setBookingId(e.target.value)}
+                placeholder="e.g. 2001"
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: "7px", fontSize: "14px" }}
+              />
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={loading}
+              style={{ padding: "9px 18px", fontSize: "14px" }}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={loading}
+              style={{
+                padding: "9px 18px",
+                fontSize: "14px",
+                fontWeight: 600,
+                background: "white",
+                border: "1px solid #d1d5db",
+                color: "#374151",
+                borderRadius: "7px",
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </form>
       </div>
 
       <div className="table-container">

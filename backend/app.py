@@ -11,6 +11,8 @@ from routes.bookings import bookings_bp
 from routes.payments import payments_bp
 from routes.ratings import ratings_bp
 from routes.dashboard import dashboard_bp
+from routes.disputes import disputes_bp
+from routes.notifications import notifications_bp
 
 from errors import register_error_handlers
 
@@ -41,6 +43,8 @@ app.register_blueprint(bookings_bp)
 app.register_blueprint(payments_bp)
 app.register_blueprint(ratings_bp)
 app.register_blueprint(dashboard_bp)
+app.register_blueprint(disputes_bp)
+app.register_blueprint(notifications_bp)
 
 
 # Register error handlers

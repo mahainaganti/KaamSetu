@@ -90,12 +90,12 @@ def get_worker(worker_id):
     }
 
 
-def search_workers(language):
+def search_workers(language=None, location_id=None, average_rating=None):
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    query = """
         SELECT
             worker_id,
             full_name,
@@ -103,9 +103,29 @@ def search_workers(language):
             average_rating,
             availability_status
         FROM workers
-        WHERE preferred_language=%s
-        ORDER BY average_rating DESC;
-    """, (language,))
+    """
+
+    conditions = []
+    params = []
+
+    if language is not None and str(language).strip() != "":
+        conditions.append("preferred_language=%s")
+        params.append(language)
+
+    if location_id is not None and str(location_id).strip() != "":
+        conditions.append("location_id=%s")
+        params.append(location_id)
+
+    if average_rating is not None and str(average_rating).strip() != "":
+        conditions.append("average_rating=%s")
+        params.append(average_rating)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY average_rating DESC;"
+
+    cursor.execute(query, tuple(params))
 
     rows = cursor.fetchall()
 

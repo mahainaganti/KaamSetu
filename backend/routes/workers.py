@@ -35,10 +35,13 @@ def worker(worker_id):
 def search():
 
     language = request.args.get("language")
+    location_id = request.args.get("location_id")
+    average_rating = request.args.get("average_rating")
 
-    return jsonify(search_workers(language))
+    return jsonify(search_workers(language=language, location_id=location_id, average_rating=average_rating))
 
 @workers_bp.route("/workers", methods=["POST"])
+
 def add_worker():
 
     data = request.get_json()

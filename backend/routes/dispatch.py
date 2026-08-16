@@ -68,6 +68,14 @@ def decline_offer(offer_id):
     return jsonify({"declined": True})
 
 
+@dispatch_bp.route("/jobs/<int:job_id>/matches", methods=["GET"])
+def job_matches(job_id):
+    matches = dispatch_service.job_matches(job_id)
+    if matches is None:
+        return jsonify({"error": "Job not found or has no description"}), 404
+    return jsonify(matches)
+
+
 @dispatch_bp.route("/dispatch/admin", methods=["GET"])
 def dispatch_admin():
     if request.headers.get("X-Admin-Passcode") != Config.ADMIN_PASSCODE or not Config.ADMIN_PASSCODE:

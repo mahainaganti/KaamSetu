@@ -281,6 +281,20 @@ def ping_location(worker_id, lat, lng):
         return cur.fetchone()
 
 
+def job_matches(job_id, limit=10):
+    """Semantic worker suggestions for a posted job (embeds the
+    description on demand rather than requiring a backfilled
+    job_posts.embedding column).
+    """
+    with transaction() as cur:
+        cur.execute("SELECT job_id, description FROM job_posts WHERE job_id = %s", (job_id,))
+        job = cur.fetchone()
+        if job is None or not job["description"]:
+            return None
+        embedding = embed(job["description"])
+        return matching_service.shortlist_workers_for_job(cur, embedding, limit=limit)
+
+
 def admin_dispatch_board():
     with transaction() as cur:
         cur.execute(

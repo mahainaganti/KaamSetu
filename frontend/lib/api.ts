@@ -459,3 +459,142 @@ export async function getDashboardStats(): Promise<DashboardData> {
   return await response.json();
 }
 
+
+export type JobOffer = {
+  offer_id: number;
+  worker_id: number;
+  wave_no: number;
+  offered_at: string;
+  expires_at: string;
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED" | "LOST";
+};
+
+export type ServiceRequest = {
+  request_id: number;
+  customer_id: number;
+  raw_text: string;
+  category_hint: string | null;
+  urgency: string;
+  lat: number;
+  lng: number;
+  status: "SEARCHING" | "OFFERED" | "ASSIGNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "EXPIRED";
+  wave_no: number;
+  assigned_worker: number | null;
+  job_id: number | null;
+  created_at: string;
+  assigned_at: string | null;
+  offers: JobOffer[];
+};
+
+export async function toggleDuty(workerId: number, dutyStatus: "online" | "offline", lat?: number, lng?: number) {
+  const response = await fetch(`${API_BASE_URL}/worker-status/${workerId}/duty`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ duty_status: dutyStatus, lat, lng }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to toggle duty status");
+  }
+  return await response.json();
+}
+
+export async function pingLocation(workerId: number, lat: number, lng: number) {
+  const response = await fetch(`${API_BASE_URL}/worker-status/${workerId}/ping`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat, lng }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to ping location");
+  }
+  return await response.json();
+}
+
+export async function createServiceRequest(data: {
+  customer_id: number;
+  raw_text: string;
+  lat: number;
+  lng: number;
+  category_hint?: string;
+  urgency?: string;
+}): Promise<{ request_id: number; offers: JobOffer[] }> {
+  const response = await fetch(`${API_BASE_URL}/service-requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to create service request");
+  }
+  return await response.json();
+}
+
+export async function getServiceRequest(requestId: number): Promise<ServiceRequest> {
+  const response = await fetch(`${API_BASE_URL}/service-requests/${requestId}`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch service request");
+  }
+  return await response.json();
+}
+
+export async function acceptOffer(offerId: number, workerId: number) {
+  const response = await fetch(`${API_BASE_URL}/job-offers/${offerId}/accept`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ worker_id: workerId }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok && response.status !== 409) {
+    throw new Error(data.error || "Failed to accept offer");
+  }
+  return data;
+}
+
+export async function declineOffer(offerId: number, workerId: number) {
+  const response = await fetch(`${API_BASE_URL}/job-offers/${offerId}/decline`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ worker_id: workerId }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to decline offer");
+  }
+  return await response.json();
+}
+
+export async function getDispatchAdmin(passcode: string) {
+  const response = await fetch(`${API_BASE_URL}/dispatch/admin`, {
+    headers: { "X-Admin-Passcode": passcode },
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch dispatch board");
+  }
+  return await response.json();
+}
+
+export async function createCallSession(bookingId: number) {
+  const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/call-session`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to create call session");
+  }
+  return await response.json();
+}
+
+export async function getJobMatches(jobId: string) {
+  const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/matches`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch job matches");
+  }
+  return await response.json();
+}
+

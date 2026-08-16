@@ -44,6 +44,11 @@ def get_service_request(request_id):
     return jsonify(result)
 
 
+@dispatch_bp.route("/workers/<int:worker_id>/offers", methods=["GET"])
+def worker_offers(worker_id):
+    return jsonify(dispatch_service.worker_pending_offers(worker_id))
+
+
 @dispatch_bp.route("/job-offers/<int:offer_id>/accept", methods=["POST"])
 def accept_offer(offer_id):
     data = request.get_json() or {}

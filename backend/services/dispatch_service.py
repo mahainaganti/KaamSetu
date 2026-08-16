@@ -96,7 +96,17 @@ def get_service_request(request_id):
             "FROM job_offer WHERE request_id = %s ORDER BY offer_id", (request_id,)
         )
         offers = cur.fetchall()
-        return {**req, "offers": offers}
+
+        booking_id = None
+        if req["job_id"] is not None:
+            cur.execute(
+                "SELECT booking_id FROM bookings WHERE job_id = %s AND worker_id = %s",
+                (req["job_id"], req["assigned_worker"]),
+            )
+            row = cur.fetchone()
+            booking_id = row["booking_id"] if row else None
+
+        return {**req, "offers": offers, "booking_id": booking_id}
 
 
 def _expire_stale_offers(cur, request_id):
@@ -279,6 +289,22 @@ def ping_location(worker_id, lat, lng):
             (lat, lng, worker_id),
         )
         return cur.fetchone()
+
+
+def worker_pending_offers(worker_id):
+    with transaction() as cur:
+        cur.execute(
+            """
+            SELECT jo.offer_id, jo.request_id, jo.wave_no, jo.offered_at, jo.expires_at, jo.status,
+                   sr.raw_text, sr.category_hint, sr.urgency, sr.lat, sr.lng
+            FROM job_offer jo
+            JOIN service_request sr ON sr.request_id = jo.request_id
+            WHERE jo.worker_id = %s AND jo.status = 'PENDING' AND jo.expires_at > now()
+            ORDER BY jo.offered_at DESC
+            """,
+            (worker_id,),
+        )
+        return cur.fetchall()
 
 
 def job_matches(job_id, limit=10):

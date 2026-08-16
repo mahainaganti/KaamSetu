@@ -14,6 +14,10 @@ export default function Sidebar() {
     { name: "Bookings", path: "/bookings", icon: "📅" },
     { name: "Payments", path: "/payments", icon: "💳" },
     { name: "Ratings", path: "/ratings", icon: "⭐" },
+    { name: "Duty Status", path: "/duty", icon: "🟢" },
+    { name: "Need Help Now", path: "/help/new", icon: "🚨" },
+    { name: "My Offers", path: "/offers", icon: "📨" },
+    { name: "Dispatch Board", path: "/dispatch", icon: "📡" },
     { name: "Disputes", path: "/disputes", icon: "⚠️" },
     { name: "Notifications", path: "/notifications", icon: "🔔" },
   ];

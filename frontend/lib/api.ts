@@ -484,6 +484,7 @@ export type ServiceRequest = {
   created_at: string;
   assigned_at: string | null;
   offers: JobOffer[];
+  booking_id: number | null;
 };
 
 export async function toggleDuty(workerId: number, dutyStatus: "online" | "offline", lat?: number, lng?: number) {
@@ -537,6 +538,24 @@ export async function getServiceRequest(requestId: number): Promise<ServiceReque
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || "Failed to fetch service request");
+  }
+  return await response.json();
+}
+
+export type WorkerOffer = JobOffer & {
+  request_id: number;
+  raw_text: string;
+  category_hint: string | null;
+  urgency: string;
+  lat: number;
+  lng: number;
+};
+
+export async function getWorkerOffers(workerId: number): Promise<WorkerOffer[]> {
+  const response = await fetch(`${API_BASE_URL}/workers/${workerId}/offers`);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to fetch offers");
   }
   return await response.json();
 }

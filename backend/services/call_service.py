@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from db_pool import transaction
 from services import telephony_service
 from services.telephony_service import NoVirtualNumberAvailable
@@ -27,18 +25,17 @@ def create_call_session(booking_id):
         if parties is None:
             return None
 
-        active_until = datetime.utcnow() + timedelta(hours=2)
         session = None
         for virtual_number in telephony_service.virtual_number_pool():
             cur.execute(
                 """
                 INSERT INTO call_session
                     (booking_id, virtual_number, customer_id, worker_id, active_until, status)
-                VALUES (%s, %s, %s, %s, %s, 'active')
+                VALUES (%s, %s, %s, %s, now() + interval '2 hours', 'active')
                 ON CONFLICT (virtual_number) WHERE status = 'active' DO NOTHING
                 RETURNING *
                 """,
-                (booking_id, virtual_number, parties["customer_id"], parties["worker_id"], active_until),
+                (booking_id, virtual_number, parties["customer_id"], parties["worker_id"]),
             )
             session = cur.fetchone()
             if session:

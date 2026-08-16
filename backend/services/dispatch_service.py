@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from db_pool import transaction
 from services import matching_service
 from services.embedding_service import embed
@@ -30,16 +28,15 @@ def _dispatch_wave(cur, request_id, lat, lng, category_hint, wave_index, embeddi
     if not candidates:
         return []
 
-    expires_at = datetime.utcnow() + timedelta(seconds=wave["ttl_seconds"])
     offers = []
     for c in candidates:
         cur.execute(
             """
             INSERT INTO job_offer (request_id, worker_id, wave_no, expires_at)
-            VALUES (%s, %s, %s, %s)
+            VALUES (%s, %s, %s, now() + (%s * interval '1 second'))
             RETURNING offer_id, worker_id, wave_no, expires_at
             """,
-            (request_id, c["worker_id"], wave_index + 1, expires_at),
+            (request_id, c["worker_id"], wave_index + 1, wave["ttl_seconds"]),
         )
         offers.append(cur.fetchone())
     return offers
@@ -222,8 +219,6 @@ def _create_job_and_booking(cur, req, worker_id):
     )
     job_id = cur.fetchone()["job_id"]
 
-    start_ts = datetime.utcnow()
-    end_ts = start_ts + timedelta(hours=2)
     cur.execute("SELECT pg_advisory_xact_lock(hashtext('bookings_pk'))")
     cur.execute(
         """
@@ -232,10 +227,10 @@ def _create_job_and_booking(cur, req, worker_id):
              final_price, completion_date, start_ts, end_ts)
         VALUES
             ((SELECT COALESCE(MAX(booking_id),0)+1 FROM bookings), %s, %s, CURRENT_DATE, CURRENT_DATE,
-             'Accepted', NULL, NULL, %s, %s)
+             'Accepted', NULL, NULL, now(), now() + interval '2 hours')
         RETURNING booking_id
         """,
-        (job_id, worker_id, start_ts, end_ts),
+        (job_id, worker_id),
     )
     booking_id = cur.fetchone()["booking_id"]
     return job_id, booking_id

@@ -51,7 +51,7 @@ def shortlist_workers_for_request(cur, embedding: list[float], lat: float, lng: 
               WHERE b.worker_id = w.worker_id
                 AND b.booking_status NOT IN ('Cancelled', 'Completed')
                 AND b.start_ts IS NOT NULL AND b.end_ts IS NOT NULL
-                AND tsrange(b.start_ts, b.end_ts) && tsrange(now(), now() + interval '2 hours')
+                AND tsrange(b.start_ts, b.end_ts) && tsrange(now()::timestamp, (now() + interval '2 hours')::timestamp)
           )
         ORDER BY wp.embedding <=> %(emb)s::vector
         LIMIT 50
